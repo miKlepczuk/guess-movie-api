@@ -56,9 +56,10 @@ class Puzzle
         return $this;
     }
 
-    public function jsonSerialize()
+    public function toArray()
     {
         return [
+            "id" => $this->getId(),
             "sentence" => $this->getSentence(),
             "image" => $this->getImage()
         ];
