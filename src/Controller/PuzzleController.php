@@ -33,10 +33,97 @@ class PuzzleController extends AbstractController
         $this->entityManager = $entityManager;
         $this->puzzleRepository = $puzzleRepository;
     }
+
+    /**
+     * @Route("/puzzles", name="puzzles", methods={"GET"})
+     */
+    public function getPuzzles(): JsonResponse
     {
-        return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'path' => 'src/Controller/PuzzleController.php',
-        ]);
+        $puzzles = $this->puzzleRepository->findAll();
+        $data = [];
+
+        foreach ($puzzles as $puzzle) {
+            $data[] = $puzzle->toArray();
+        }
+        return new JsonResponse($data, Response::HTTP_OK);
+    }
+
+    /**
+     * @Route("/puzzles", name="add_puzzle", methods={"POST"})
+     */
+    public function addPuzzle(Request $request): JsonResponse
+    {
+        try {
+            $sentence = $request->query->get('sentence');
+            $image = $request->query->get('image');
+
+            if (!$request || !$sentence || !$image) {
+                throw new \Exception;
+            }
+            $this->puzzleRepository->savePuzzle($sentence, $image);
+            return new JsonResponse(['status' => 'Puzzle added successfully!'], Response::HTTP_CREATED);
+        } catch (\Exception $e) {
+            return new JsonResponse(['status' => 'Data no valid!'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    /**
+     * @Route("/puzzles/{id}", name="get_puzzle", methods={"GET"})
+     */
+    public function getPuzzle(int $id)
+    {
+        try {
+            $puzzle = $this->puzzleRepository->findOneBy(['id' => $id]);
+            if (!$puzzle) {
+                throw new \Exception;
+            }
+            $data = $puzzle->toArray();
+            return new JsonResponse($data, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return new JsonResponse(['status' => 'Puzzle not found!'], Response::HTTP_NOT_FOUND);
+        }
+    }
+
+
+    /**
+     * @Route("/puzzles/{id}", name="update_puzzle", methods={"PUT"})
+     */
+    public function updatePuzzle($id, Request $request): JsonResponse
+    {
+        try {
+            $puzzle = $this->puzzleRepository->findOneBy(['id' => $id]);
+
+            $sentence = $request->query->get('sentence');
+            $image = $request->query->get('image');
+
+            if (!$request || !$puzzle || !$sentence || !$image) {
+                throw new \Exception;
+            }
+            $puzzle->setSentence($sentence);
+            $puzzle->setImage($image);
+            $updatedPuzzle = $this->puzzleRepository->updatePuzzle($puzzle);
+            return new JsonResponse($updatedPuzzle->toArray(), Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return new JsonResponse(['status' => 'Puzzle not found or data no valid!'], Response::HTTP_NOT_FOUND);
+        }
+    }
+
+    /**
+     * @Route("/puzzles/{id}", name="delete_puzzle", methods={"DELETE"})
+     */
+    public function deletePuzzle($id): JsonResponse
+    {
+        try {
+            $puzzle = $this->puzzleRepository->findOneBy(['id' => $id]);
+
+            if (!$puzzle) {
+                throw new \Exception;
+            }
+
+            $this->puzzleRepository->removePuzzle($puzzle);
+            return new JsonResponse(['status' => 'Puzzle deleted successfully!'], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return new JsonResponse(['status' => 'Puzzle not found!'], Response::HTTP_NOT_FOUND);
+        }
     }
 }

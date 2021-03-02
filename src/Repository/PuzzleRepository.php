@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Puzzle;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -14,9 +15,12 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class PuzzleRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private $manager;
+
+    public function __construct(ManagerRegistry $registry, EntityManagerInterface $manager)
     {
         parent::__construct($registry, Puzzle::class);
+        $this->manager = $manager;
     }
 
     // /**
@@ -46,5 +50,26 @@ class PuzzleRepository extends ServiceEntityRepository
             ->getOneOrNullResult()
         ;
     }
-    */
+      */
+    public function savePuzzle($sentence, $image)
+    {
+        $puzzle = new Puzzle();
+        $puzzle->setSentence($sentence);
+        $puzzle->setImage($image);
+        $this->manager->persist($puzzle);
+        $this->manager->flush();
+    }
+    public function updatePuzzle(Puzzle $puzzle): Puzzle
+    {
+        $this->manager->persist($puzzle);
+        $this->manager->flush();
+
+        return $puzzle;
+    }
+
+    public function removePuzzle(Puzzle $puzzle)
+    {
+        $this->manager->remove($puzzle);
+        $this->manager->flush();
+    }
 }
