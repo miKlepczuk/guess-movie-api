@@ -55,4 +55,12 @@ class Puzzle
 
         return $this;
     }
+
+    public function jsonSerialize()
+    {
+        return [
+            "sentence" => $this->getSentence(),
+            "image" => $this->getImage()
+        ];
+    }
 }
