@@ -19,58 +19,24 @@ class User implements UserInterface
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $username;
-
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $password;
-
-    /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=180, unique=true)
      */
     private $email;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="json")
      */
-    private $score;
+    private $roles = [];
 
     /**
-     * @ORM\ManyToOne(targetEntity=puzzle::class)
-     * @ORM\JoinColumn(nullable=false)
+     * @var string The hashed password
+     * @ORM\Column(type="string")
      */
-    private $currentPuzzle;
+    private $password;
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getUsername(): ?string
-    {
-        return $this->username;
-    }
-
-    public function setUsername(string $username): self
-    {
-        $this->username = $username;
-
-        return $this;
-    }
-
-    public function getPassword(): ?string
-    {
-        return $this->password;
-    }
-
-    public function setPassword(string $password): self
-    {
-        $this->password = $password;
-
-        return $this;
     }
 
     public function getEmail(): ?string
@@ -85,47 +51,67 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getScore(): ?int
+    /**
+     * A visual identifier that represents this user.
+     *
+     * @see UserInterface
+     */
+    public function getUsername(): string
     {
-        return $this->score;
+        return (string) $this->email;
     }
 
-    public function setScore(int $score): self
+    /**
+     * @see UserInterface
+     */
+    public function getRoles(): array
     {
-        $this->score = $score;
+        $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
 
-        return $this;
+        return array_unique($roles);
     }
 
-    public function getCurrentPuzzle(): ?puzzle
+    public function setRoles(array $roles): self
     {
-        return $this->currentPuzzle;
-    }
-
-    public function setCurrentPuzzle(?puzzle $currentPuzzle): self
-    {
-        $this->currentPuzzle = $currentPuzzle;
+        $this->roles = $roles;
 
         return $this;
     }
 
     /**
-     * @return string|null
+     * @see UserInterface
      */
-    public function getSalt()
+    public function getPassword(): string
+    {
+        return (string) $this->password;
+    }
+
+    public function setPassword(string $password): self
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+
+    /**
+     * Returning a salt is only needed, if you are not using a modern
+     * hashing algorithm (e.g. bcrypt or sodium) in your security.yaml.
+     *
+     * @see UserInterface
+     */
+    public function getSalt(): ?string
     {
         return null;
     }
 
     /**
-     * @return array|string[]
+     * @see UserInterface
      */
-    public function getRoles()
-    {
-        return array('ROLE_USER');
-    }
-
     public function eraseCredentials()
     {
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
     }
 }
