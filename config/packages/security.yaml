@@ -32,7 +32,10 @@ security:
             stateless: true
             anonymous: true
 
-
+        app.swagger_ui:
+            pattern: ^/api/doc
+            stateless: true
+            anonymous: true   
 
         api:
            pattern: ^/api
