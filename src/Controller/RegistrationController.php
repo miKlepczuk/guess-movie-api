@@ -40,7 +40,7 @@ class RegistrationController extends AbstractController
     }
 
     /**
-     * @Route("/register", name="register")
+     * @Route("/register", name="register", methods={"POST"})
      */
     public function index(Request $request): JsonResponse
     {
