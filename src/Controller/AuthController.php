@@ -51,6 +51,19 @@ class AuthController extends AbstractController
     /**
      * @Route("/register", name="register", methods={"POST"})
      * @OA\Tag(name="user")
+     * 
+     * @OA\Parameter(
+     *     name="email",
+     *     in="query",
+     *     @OA\Schema(type="string")
+     *  )
+     * 
+     * @OA\Parameter(
+     *     name="password",
+     *     in="query",
+     *     @OA\Schema(type="string")
+     *  )
+     * 
      * @return JsonResponse
      */
     public function register(Request $request): JsonResponse
@@ -97,6 +110,18 @@ class AuthController extends AbstractController
     /**
      * @Route("/api/login_check", name="login", methods={"GET"})
      * @OA\Tag(name="user")
+     * 
+     * @OA\Parameter(
+     *     name="email",
+     *     in="query",
+     *     @OA\Schema(type="string")
+     *  )
+     * 
+     * @OA\Parameter(
+     *     name="password",
+     *     in="query",
+     *     @OA\Schema(type="string")
+     *  )
      * @return JsonResponse
      */
     public function login(Request $request): JsonResponse
