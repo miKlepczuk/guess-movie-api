@@ -34,6 +34,17 @@ class User implements UserInterface
      */
     private $password;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $score;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Puzzle::class, inversedBy="users")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $puzzle;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -113,5 +124,29 @@ class User implements UserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    public function getScore(): ?int
+    {
+        return $this->score;
+    }
+
+    public function setScore(int $score): self
+    {
+        $this->score = $score;
+
+        return $this;
+    }
+
+    public function getPuzzle(): ?Puzzle
+    {
+        return $this->puzzle;
+    }
+
+    public function setPuzzle(?Puzzle $puzzle): self
+    {
+        $this->puzzle = $puzzle;
+
+        return $this;
     }
 }

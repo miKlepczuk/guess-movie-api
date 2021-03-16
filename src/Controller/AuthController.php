@@ -83,11 +83,7 @@ class AuthController extends AbstractController
             );
         }
 
-        $user = new User();
-        $user->setEmail($email);
-        $user->setPassword($this->passwordEncoder->encodePassword($user, $password));
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
+        $this->userRepository->createUser($email, $password);
 
         return new JsonResponse(
             [
@@ -147,7 +143,9 @@ class AuthController extends AbstractController
             'message' => 'Logged in',
             'data' => [
                 'email' => $user->getEmail(),
-                'token' => sprintf($jwt),
+                'score' => $user->getScore(),
+                'puzzleId' => $user->getPuzzle()->getId(),
+                'token' => sprintf($jwt)
             ]
         ], Response::HTTP_OK);
     }
