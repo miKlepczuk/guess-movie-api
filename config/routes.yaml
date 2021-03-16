@@ -4,6 +4,8 @@
 
 api_login_check:
     path: /api/login_check
+    controller: App\Controller\AuthController::register
+    methods: GET 
 
 gesdinet_jwt_refresh_token:
     path: /api/token/refresh

@@ -6,12 +6,16 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\Context\Context;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Namshi\JOSE\JWT;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+use OpenApi\Annotations as OA;
 
 class AuthController extends AbstractController
 {
@@ -31,18 +35,25 @@ class AuthController extends AbstractController
      */
     private $passwordEncoder;
 
+    /**
+     * @var JWTTokenManagerInterface
+     */
+    private $JWTManager;
 
-    public function __construct(EntityManagerInterface $entityManager, UserRepository $userRepository, UserPasswordEncoderInterface $passwordEncoder)
+    public function __construct(EntityManagerInterface $entityManager, UserRepository $userRepository, UserPasswordEncoderInterface $passwordEncoder, JWTTokenManagerInterface $JWTManager)
     {
         $this->entityManager = $entityManager;
         $this->userRepository = $userRepository;
         $this->passwordEncoder = $passwordEncoder;
+        $this->JWTManager = $JWTManager;
     }
 
     /**
      * @Route("/register", name="register", methods={"POST"})
+     * @OA\Tag(name="user")
+     * @return JsonResponse
      */
-    public function index(Request $request): JsonResponse
+    public function register(Request $request): JsonResponse
     {
         $email = $request->query->get('email');
         $password = $request->query->get('password');
@@ -50,7 +61,13 @@ class AuthController extends AbstractController
         $user = $this->userRepository->findOneBy(['email' => $email,]);
 
         if (!is_null($user)) {
-            return new JsonResponse(['message' => 'User already exists'], Response::HTTP_CONFLICT);
+            return new JsonResponse(
+                [
+                    'code' => Response::HTTP_CONFLICT,
+                    'message' => 'User already exists'
+                ],
+                Response::HTTP_CONFLICT
+            );
         }
 
         $user = new User();
@@ -59,6 +76,54 @@ class AuthController extends AbstractController
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        return new JsonResponse(['message' => 'Created'], Response::HTTP_CREATED);
+        return new JsonResponse(
+            [
+                'code' => Response::HTTP_CREATED,
+                'message' => 'Created'
+            ],
+            Response::HTTP_CREATED
+        );
+    }
+
+    /**
+     * @param UserInterface $user
+     * @return JsonResponse
+     */
+    public function getTokenUser(UserInterface $user)
+    {
+        return new JsonResponse(['token' => $this->JWTManager->create($user)]);
+    }
+
+    /**
+     * @Route("/api/login_check", name="login", methods={"GET"})
+     * @OA\Tag(name="user")
+     * @return JsonResponse
+     */
+    public function login(Request $request): JsonResponse
+    {
+
+        $user = $this->userRepository->findOneBy([
+            'email' => $request->query->get('email'),
+        ]);
+        if (!$user || !$this->passwordEncoder->isPasswordValid($user,  $request->query->get('password'))) {
+            return new JsonResponse(
+                [
+                    'code' => Response::HTTP_UNAUTHORIZED,
+                    'message' => 'Invalid Credentials'
+                ],
+                Response::HTTP_UNAUTHORIZED
+            );
+        }
+
+        $jwt = $this->JWTManager->create($user);
+
+        return new JsonResponse([
+            'code' => Response::HTTP_OK,
+            'message' => 'Logged in',
+            'data' => [
+                'email' => $user->getEmail(),
+                'token' => sprintf($jwt),
+            ]
+        ], Response::HTTP_OK);
     }
 }
