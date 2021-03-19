@@ -141,11 +141,12 @@ class AuthController extends AbstractController
         return new JsonResponse([
             'code' => Response::HTTP_OK,
             'message' => 'Logged in',
-            'data' => [
+            'user' => [
                 'email' => $user->getEmail(),
                 'score' => $user->getScore(),
                 'puzzleId' => $user->getPuzzle()->getId(),
-                'token' => sprintf($jwt)
+            'token' => sprintf($jwt),
+
             ]
         ], Response::HTTP_OK);
     }
