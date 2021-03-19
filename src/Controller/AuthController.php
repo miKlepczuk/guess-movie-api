@@ -49,7 +49,7 @@ class AuthController extends AbstractController
     }
 
     /**
-     * @Route("/register", name="register", methods={"POST"})
+     * @Route("/api/register", name="register", methods={"POST"})
      * @OA\Tag(name="user")
      * 
      * @OA\Parameter(
