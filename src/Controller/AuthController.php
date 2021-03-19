@@ -77,7 +77,7 @@ class AuthController extends AbstractController
             return new JsonResponse(
                 [
                     'code' => Response::HTTP_CONFLICT,
-                    'message' => 'User already exists'
+                    'message' => 'This email address is already taken'
                 ],
                 Response::HTTP_CONFLICT
             );
@@ -130,7 +130,7 @@ class AuthController extends AbstractController
             return new JsonResponse(
                 [
                     'code' => Response::HTTP_UNAUTHORIZED,
-                    'message' => 'Invalid Credentials'
+                    'message' => 'The email or password did not match'
                 ],
                 Response::HTTP_UNAUTHORIZED
             );
