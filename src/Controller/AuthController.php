@@ -2,12 +2,9 @@
 
 namespace App\Controller;
 
-use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use FOS\RestBundle\Context\Context;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
-use Namshi\JOSE\JWT;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,11 +16,6 @@ use OpenApi\Annotations as OA;
 
 class AuthController extends AbstractController
 {
-
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
 
     /**
      * @var UserRepository
@@ -40,9 +32,8 @@ class AuthController extends AbstractController
      */
     private $JWTManager;
 
-    public function __construct(EntityManagerInterface $entityManager, UserRepository $userRepository, UserPasswordEncoderInterface $passwordEncoder, JWTTokenManagerInterface $JWTManager)
+    public function __construct(UserRepository $userRepository, UserPasswordEncoderInterface $passwordEncoder, JWTTokenManagerInterface $JWTManager)
     {
-        $this->entityManager = $entityManager;
         $this->userRepository = $userRepository;
         $this->passwordEncoder = $passwordEncoder;
         $this->JWTManager = $JWTManager;
@@ -83,12 +74,20 @@ class AuthController extends AbstractController
             );
         }
 
-        $this->userRepository->createUser($email, $password);
+        $user = $this->userRepository->createUser($email, $password);
+        $jwt =
+            $this->JWTManager->create($user);
 
         return new JsonResponse(
             [
                 'code' => Response::HTTP_CREATED,
-                'message' => 'Created'
+                'message' => 'Created',
+                'user' => [
+                    'email' => $user->getEmail(),
+                    'score' => $user->getScore(),
+                    'puzzleId' => $user->getPuzzle()->getId(),
+                    'token' => sprintf($jwt),
+                ]
             ],
             Response::HTTP_CREATED
         );
@@ -145,8 +144,7 @@ class AuthController extends AbstractController
                 'email' => $user->getEmail(),
                 'score' => $user->getScore(),
                 'puzzleId' => $user->getPuzzle()->getId(),
-            'token' => sprintf($jwt),
-
+                'token' => sprintf($jwt),
             ]
         ], Response::HTTP_OK);
     }
