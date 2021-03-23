@@ -45,6 +45,13 @@ class UserController extends AbstractController
         $score = $request->query->get('score');
         $puzzleId = $request->query->get('puzzleId');
 
+         if ($score=='' && $puzzleId=='') {
+            return new JsonResponse([
+                'code' => Response::HTTP_BAD_REQUEST,
+                'message' => 'Missing parameters',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
         try {
             $user = $this->userRepository->updateUserGame($user, $score, $puzzleId);
             return new JsonResponse([
@@ -57,11 +64,12 @@ class UserController extends AbstractController
                     'puzzleId' => $user->getPuzzle()->getId(),
                 ]
             ], Response::HTTP_OK);
+
         } catch (\Exception $e) {
             return new JsonResponse([
                 'code' => Response::HTTP_BAD_REQUEST,
                 'message' => 'Bad request',
-            ], Response::HTTP_BAD_REQUEST);
+            ], Response::HTTP_BAD_REQUEST);;
         }
     }
 }
