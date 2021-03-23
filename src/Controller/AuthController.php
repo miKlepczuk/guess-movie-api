@@ -83,6 +83,7 @@ class AuthController extends AbstractController
                 'code' => Response::HTTP_CREATED,
                 'message' => 'Created',
                 'user' => [
+                    'id' => $user->getId(),
                     'email' => $user->getEmail(),
                     'score' => $user->getScore(),
                     'puzzleId' => $user->getPuzzle()->getId(),
@@ -141,6 +142,7 @@ class AuthController extends AbstractController
             'code' => Response::HTTP_OK,
             'message' => 'Logged in',
             'user' => [
+                'id' => $user->getId(),
                 'email' => $user->getEmail(),
                 'score' => $user->getScore(),
                 'puzzleId' => $user->getPuzzle()->getId(),

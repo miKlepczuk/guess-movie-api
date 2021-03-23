@@ -26,16 +26,16 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/api/user", name="update_user", methods={"PATCH"})
+     * @Route("/api/users/{id}", name="update_user", methods={"PATCH"})
      * @OA\Tag(name="user")
      * @return JsonResponse
      */
-    public function update(Request $request, TokenStorageInterface  $tokenStorageInterface): JsonResponse
+    public function update($id, Request $request, TokenStorageInterface  $tokenStorageInterface): JsonResponse
     {
         $token = $tokenStorageInterface->getToken();
         $user = $token->getUser();
 
-        if (!$user) {
+        if (!$user || $id != $user->getId()) {
             return new JsonResponse([
                 'code' => Response::HTTP_FORBIDDEN,
                 'message' => 'Forbidden'
@@ -51,6 +51,7 @@ class UserController extends AbstractController
                 'code' => Response::HTTP_OK,
                 'message' => 'Changed successfully',
                 'user' => [
+                    'id' => $user->getId(),
                     'email' => $user->getEmail(),
                     'score' => $user->getScore(),
                     'puzzleId' => $user->getPuzzle()->getId(),
