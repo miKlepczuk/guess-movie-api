@@ -63,11 +63,10 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
     public function updateUserGame($user, $newScore, $newPuzzleId)
     {
-        if ($newScore) {
+        if ($newScore != null) {
             $user->setScore($newScore);
         }
-
-        if ($newPuzzleId) {
+        if ($newPuzzleId != null) {
             $puzzle = $this->_em->getRepository(Puzzle::class)->findOneBy(['id' => $newPuzzleId]);
             $user->setPuzzle($puzzle);
         }
