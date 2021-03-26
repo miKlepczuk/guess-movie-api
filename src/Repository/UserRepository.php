@@ -50,7 +50,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $user = new User();
         $user->setEmail($email);
         $user->setPassword($this->passwordEncoder->encodePassword($user, $plainPassword));
-        $user->setScore(0);
+        $user->setScore(100);
 
         $puzzle = $this->_em->getRepository(Puzzle::class)->findOneBy(['id' => 1]);
         $user->setPuzzle($puzzle);
