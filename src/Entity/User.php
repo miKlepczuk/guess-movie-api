@@ -45,6 +45,11 @@ class User implements UserInterface
      */
     private $puzzle;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $isGameFinished;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -146,6 +151,18 @@ class User implements UserInterface
     public function setPuzzle(?Puzzle $puzzle): self
     {
         $this->puzzle = $puzzle;
+
+        return $this;
+    }
+
+    public function getIsGameFinished(): ?bool
+    {
+        return $this->isGameFinished;
+    }
+
+    public function setIsGameFinished(bool $isGameFinished): self
+    {
+        $this->isGameFinished = $isGameFinished;
 
         return $this;
     }
