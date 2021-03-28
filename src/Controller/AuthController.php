@@ -88,6 +88,8 @@ class AuthController extends AbstractController
                     'score' => $user->getScore(),
                     'puzzleId' => $user->getPuzzle()->getId(),
                     'token' => sprintf($jwt),
+                    'isGameFinished' => $user->getIsGameFinished(),
+
                 ]
             ],
             Response::HTTP_CREATED
@@ -147,6 +149,7 @@ class AuthController extends AbstractController
                 'score' => $user->getScore(),
                 'puzzleId' => $user->getPuzzle()->getId(),
                 'token' => sprintf($jwt),
+                'isGameFinished' => $user->getIsGameFinished(),
             ]
         ], Response::HTTP_OK);
     }
