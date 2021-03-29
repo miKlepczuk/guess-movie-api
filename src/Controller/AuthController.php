@@ -191,7 +191,7 @@ class AuthController extends AbstractController
                     $this->renderView(
                         'emails/recover-password.html.twig',
                         [
-                            'recoveryKey' => $user->getRecoveryKey(),
+                            'recoveryLink' => $_ENV["FRONTEND_URL"] . "/reset-password?recovery_key=" . $user->getRecoveryKey(),
                             'email' => $email,
                         ]
                     ),
