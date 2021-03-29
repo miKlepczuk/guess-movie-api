@@ -201,13 +201,64 @@ class AuthController extends AbstractController
 
             return new JsonResponse([
                 'code' => Response::HTTP_OK,
-                'message' => 'Password changed',
+                'message' => 'Recovery key created',
             ], Response::HTTP_OK);
         } else {
             return new JsonResponse(
                 [
                     'code' => Response::HTTP_UNAUTHORIZED,
                     'message' => 'There is no account for given email'
+                ],
+                Response::HTTP_UNAUTHORIZED
+            );
+        }
+    }
+
+    /**
+     * @Route("/api/reset-password", name="resetPassword", methods={"PATCH"})
+     * @OA\Tag(name="user")
+     * 
+     * @OA\Parameter(
+     *     name="password",
+     *     in="query",
+     *     @OA\Schema(type="string")
+     *  )
+     *      * @OA\Parameter(
+     *     name="recoveryKey",
+     *     in="query",
+     *     @OA\Schema(type="string")
+     *  )
+     * @return JsonResponse
+     */
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $newPassword = $request->query->get('password');
+        $recoveryKey = $request->query->get('recoveryKey');
+        $user = $this->userRepository->findOneBy([
+            'recoveryKey' => $recoveryKey,
+        ]);
+        if ($user) {
+
+            if (strlen($newPassword) < 6) {
+                return new JsonResponse(
+                    [
+                        'code' => Response::HTTP_CONFLICT,
+                        'message' => 'Your password must be at least 6 characters long'
+                    ],
+                    Response::HTTP_CONFLICT
+                );
+            }
+
+            $this->userRepository->updatePassword($user, $newPassword);
+            return new JsonResponse([
+                'code' => Response::HTTP_OK,
+                'message' => 'Password changed',
+            ], Response::HTTP_OK);
+        } else {
+            return new JsonResponse(
+                [
+                    'code' => Response::HTTP_UNAUTHORIZED,
+                    'message' => 'Incorrect recovery key'
                 ],
                 Response::HTTP_UNAUTHORIZED
             );
