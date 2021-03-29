@@ -54,6 +54,16 @@ class UserController extends AbstractController
             ], Response::HTTP_BAD_REQUEST);
         }
 
+        if (strlen($newPassword) < 6) {
+            return new JsonResponse(
+                [
+                    'code' => Response::HTTP_CONFLICT,
+                    'message' => 'Your password must be at least 6 characters long'
+                ],
+                Response::HTTP_CONFLICT
+            );
+        }
+
         try {
             $user = $this->userRepository->updateUser($user, $score, $puzzleId, $isPuzzleFinished, $newPassword);
             return new JsonResponse([

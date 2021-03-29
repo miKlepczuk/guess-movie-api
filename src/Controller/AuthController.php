@@ -74,6 +74,16 @@ class AuthController extends AbstractController
             );
         }
 
+        if (strlen($password) < 6) {
+            return new JsonResponse(
+                [
+                    'code' => Response::HTTP_CONFLICT,
+                    'message' => 'Your password must be at least 6 characters long'
+                ],
+                Response::HTTP_CONFLICT
+            );
+        }
+
         $user = $this->userRepository->createUser($email, $password);
         $jwt =
             $this->JWTManager->create($user);
@@ -89,7 +99,6 @@ class AuthController extends AbstractController
                     'puzzleId' => $user->getPuzzle()->getId(),
                     'token' => sprintf($jwt),
                     'isPuzzleFinished' => $user->getIsPuzzleFinished(),
-
                 ]
             ],
             Response::HTTP_CREATED
