@@ -45,8 +45,9 @@ class UserController extends AbstractController
         $score = $request->query->get('score');
         $puzzleId = $request->query->get('puzzleId');
         $isGameFinished = $request->query->get('isGameFinished');
+        $isPuzzleFinished = $request->query->get('isPuzzleFinished');
 
-        if ($score == '' && $puzzleId == '' && $isGameFinished == '') {
+        if ($score == '' && $puzzleId == '' && $isGameFinished == '' && $isPuzzleFinished == '') {
             return new JsonResponse([
                 'code' => Response::HTTP_BAD_REQUEST,
                 'message' => 'Missing parameters',
@@ -54,7 +55,7 @@ class UserController extends AbstractController
         }
 
         try {
-            $user = $this->userRepository->updateUserGame($user, $score, $puzzleId, $isGameFinished);
+            $user = $this->userRepository->updateUserGame($user, $score, $puzzleId, $isGameFinished, $isPuzzleFinished);
             return new JsonResponse([
                 'code' => Response::HTTP_OK,
                 'message' => 'Changed successfully',
@@ -63,7 +64,8 @@ class UserController extends AbstractController
                     'email' => $user->getEmail(),
                     'score' => $user->getScore(),
                     'puzzleId' => $user->getPuzzle()->getId(),
-                    'isGameFinished' => $user->getIsGameFinished()
+                    'isGameFinished' => $user->getIsGameFinished(),
+                    'isPuzzleFinished' => $user->getIsPuzzleFinished()
                 ]
             ], Response::HTTP_OK);
         } catch (\Exception $e) {

@@ -89,6 +89,7 @@ class AuthController extends AbstractController
                     'puzzleId' => $user->getPuzzle()->getId(),
                     'token' => sprintf($jwt),
                     'isGameFinished' => $user->getIsGameFinished(),
+                    'isPuzzleFinished' => $user->getIsPuzzleFinished(),
 
                 ]
             ],
@@ -150,6 +151,7 @@ class AuthController extends AbstractController
                 'puzzleId' => $user->getPuzzle()->getId(),
                 'token' => sprintf($jwt),
                 'isGameFinished' => $user->getIsGameFinished(),
+                'isPuzzleFinished' => $user->getIsPuzzleFinished(),
             ]
         ], Response::HTTP_OK);
     }
