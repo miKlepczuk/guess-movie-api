@@ -51,7 +51,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $user->setEmail($email);
         $user->setPassword($this->passwordEncoder->encodePassword($user, $plainPassword));
         $user->setScore(100);
-        $user->setIsGameFinished(false);
         $user->setIsPuzzleFinished(false);
 
         $puzzle = $this->_em->getRepository(Puzzle::class)->findOneBy(['id' => 1]);
@@ -63,7 +62,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $user;
     }
 
-    public function updateUserGame($user, $newScore, $newPuzzleId, $isGameFinished, $isPuzzleFinished)
+    public function updateUserGame($user, $newScore, $newPuzzleId, $isPuzzleFinished)
     {
         if ($newScore != '') {
             $newScore = intval($newScore);
@@ -72,10 +71,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         if ($newPuzzleId != '') {
             $puzzle = $this->_em->getRepository(Puzzle::class)->findOneBy(['id' => $newPuzzleId]);
             $user->setPuzzle($puzzle);
-        }
-        if ($isGameFinished != '') {
-            $isGameFinished = $isGameFinished === 'true' ? true : false;
-            $user->setIsGameFinished($isGameFinished);
         }
         if ($isPuzzleFinished != '') {
             $isPuzzleFinished = $isPuzzleFinished === 'true' ? true : false;
