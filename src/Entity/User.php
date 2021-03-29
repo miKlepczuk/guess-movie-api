@@ -50,6 +50,11 @@ class User implements UserInterface
      */
     private $isPuzzleFinished;
 
+    /**
+     * @ORM\Column(type="string", length=20, unique=true, nullable=true)
+     */
+    private $recoveryKey;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -163,6 +168,18 @@ class User implements UserInterface
     public function setIsPuzzleFinished(bool $isPuzzleFinished): self
     {
         $this->isPuzzleFinished = $isPuzzleFinished;
+
+        return $this;
+    }
+
+    public function getRecoveryKey(): ?string
+    {
+        return $this->recoveryKey;
+    }
+
+    public function setRecoveryKey(?string $recoveryKey): self
+    {
+        $this->recoveryKey = $recoveryKey;
 
         return $this;
     }

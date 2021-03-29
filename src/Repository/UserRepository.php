@@ -82,4 +82,20 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->_em->flush();
         return $user;
     }
+
+    public function generateRecoveryKey($user)
+    {
+        $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+        $key = array();
+        $alphabetLength = strlen($alphabet) - 1;
+        for ($i = 0; $i < 20; $i++) {
+            $rand = rand(0, $alphabetLength);
+            $key[] = $alphabet[$rand];
+        }
+
+        $recoveryKey = implode($key);
+        $user->setRecoveryKey($recoveryKey);
+        $this->_em->flush();
+        return $user;
+    }
 }

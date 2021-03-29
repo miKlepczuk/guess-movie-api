@@ -131,12 +131,13 @@ class AuthController extends AbstractController
      *  )
      * @return JsonResponse
      */
-    public function login(Request $request): JsonResponse
+    public function login(Request $request, \Swift_Mailer $mailer): JsonResponse
     {
 
         $user = $this->userRepository->findOneBy([
             'email' => $request->query->get('email'),
         ]);
+
         if (!$user || !$this->passwordEncoder->isPasswordValid($user,  $request->query->get('password'))) {
             return new JsonResponse(
                 [
@@ -161,5 +162,55 @@ class AuthController extends AbstractController
                 'isPuzzleFinished' => $user->getIsPuzzleFinished(),
             ]
         ], Response::HTTP_OK);
+    }
+    /**
+     * @Route("/api/recover-password", name="recoverPassword", methods={"PATCH"})
+     * @OA\Tag(name="user")
+     * 
+     * @OA\Parameter(
+     *     name="email",
+     *     in="query",
+     *     @OA\Schema(type="string")
+     *  )
+     * @return JsonResponse
+     */
+    public function recoverPassword(Request $request, \Swift_Mailer $mailer): JsonResponse
+    {
+        $email = $request->query->get('email');
+        $user = $this->userRepository->findOneBy([
+            'email' => $email,
+        ]);
+        if ($user) {
+            $this->userRepository->generateRecoveryKey($user);
+
+            $message = (new \Swift_Message('Guess what Password Recovery'))
+                ->setFrom('guess.what.application@gmail.com')
+
+                ->setTo($request->query->get('email'))
+                ->setBody(
+                    $this->renderView(
+                        'emails/recover-password.html.twig',
+                        [
+                            'recoveryKey' => $user->getRecoveryKey(),
+                            'email' => $email,
+                        ]
+                    ),
+                    'text/html'
+                );
+            $mailer->send($message);
+
+            return new JsonResponse([
+                'code' => Response::HTTP_OK,
+                'message' => 'Password changed',
+            ], Response::HTTP_OK);
+        } else {
+            return new JsonResponse(
+                [
+                    'code' => Response::HTTP_UNAUTHORIZED,
+                    'message' => 'There is no account for given email'
+                ],
+                Response::HTTP_UNAUTHORIZED
+            );
+        }
     }
 }
