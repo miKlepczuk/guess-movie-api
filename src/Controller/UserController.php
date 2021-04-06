@@ -54,7 +54,7 @@ class UserController extends AbstractController
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        if (strlen($newPassword) < 6) {
+        if ($newPassword != ''  && strlen($newPassword) < 6) {
             return new JsonResponse(
                 [
                     'code' => Response::HTTP_CONFLICT,
