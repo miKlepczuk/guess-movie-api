@@ -28,6 +28,26 @@ class UserController extends AbstractController
     /**
      * @Route("/api/users/{id}", name="update_user", methods={"PATCH"})
      * @OA\Tag(name="user")
+     * @OA\Parameter(
+     *     name="score",
+     *     in="query",
+     *     @OA\Schema(type="integer")
+     *  )
+     * @OA\Parameter(
+     *     name="puzzleId",
+     *     in="query",
+     *     @OA\Schema(type="integer")
+     *  )  
+     * @OA\Parameter(
+     *     name="isPuzzleFinished",
+     *     in="query",
+     *     @OA\Schema(type="boolean")
+     *  )
+     * @OA\Parameter(
+     *     name="password",
+     *     in="query",
+     *     @OA\Schema(type="string")
+     *  )
      * @return JsonResponse
      */
     public function update($id, Request $request, TokenStorageInterface  $tokenStorageInterface): JsonResponse
