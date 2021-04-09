@@ -6,6 +6,7 @@
 parameters:
     app.mailer_sender_email: '%env(MAILER_SENDER_EMAIL)%'
     app.mailer_sender_name: '%env(MAILER_SENDER_NAME)%' 
+    app.backend_url: '%env(BACKEND_URL)%' 
 
 services:
     # default configuration for services in *this* file

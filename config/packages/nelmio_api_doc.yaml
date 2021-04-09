@@ -1,0 +1,17 @@
+nelmio_api_doc:
+    documentation:
+        info:
+            title: Guess movie
+            description: 'This is an API documentation of the [Guess movie](%env(resolve:FRONTEND_URL)%) game.'
+            version: '%env(resolve:API_VERSION)%'
+            contact:
+              name: '%env(resolve:AUTHOR_NAME)%'
+              email: '%env(resolve:AUTHOR_EMAIL)%'
+        components:
+            securitySchemes:
+                Bearer:
+                    type: http
+                    scheme: bearer
+                    bearerFormat: JWT
+        security:
+            - Bearer: []
