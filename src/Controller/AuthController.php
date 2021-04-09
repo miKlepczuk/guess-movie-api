@@ -3,7 +3,8 @@
 namespace App\Controller;
 
 use App\Repository\UserRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\PasswordRecoveryManager;
+
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -27,16 +28,19 @@ class AuthController extends AbstractController
      */
     private $passwordEncoder;
 
+    private $passwordRecoveryManager;
+
     /**
      * @var JWTTokenManagerInterface
      */
     private $JWTManager;
 
-    public function __construct(UserRepository $userRepository, UserPasswordEncoderInterface $passwordEncoder, JWTTokenManagerInterface $JWTManager)
+    public function __construct(UserRepository $userRepository, UserPasswordEncoderInterface $passwordEncoder, JWTTokenManagerInterface $JWTManager, PasswordRecoveryManager $passwordRecoveryManager)
     {
         $this->userRepository = $userRepository;
         $this->passwordEncoder = $passwordEncoder;
         $this->JWTManager = $JWTManager;
+        $this->passwordRecoveryManager = $passwordRecoveryManager;
     }
 
     /**
@@ -131,6 +135,7 @@ class AuthController extends AbstractController
      *  )
      * @return JsonResponse
      */
+    public function login(Request $request): JsonResponse
     {
 
         $user = $this->userRepository->findOneBy([
@@ -162,6 +167,7 @@ class AuthController extends AbstractController
             ]
         ], Response::HTTP_OK);
     }
+
     /**
      * @Route("/api/recover-password", name="recoverPassword", methods={"PATCH"})
      * @OA\Tag(name="user")
@@ -173,36 +179,15 @@ class AuthController extends AbstractController
      *  )
      * @return JsonResponse
      */
-    public function recoverPassword(Request $request, \Swift_Mailer $mailer): JsonResponse
+    public function recoverPassword(Request $request): JsonResponse
     {
-        $email = $request->query->get('email');
+        $recipient = $request->query->get('email');
+
         $user = $this->userRepository->findOneBy([
-            'email' => $email,
+            'email' => $recipient,
         ]);
-        if ($user) {
-            $this->userRepository->generateRecoveryKey($user);
 
-            $message = (new \Swift_Message('Guess what Password Recovery'))
-                ->setFrom('guess.what.application@gmail.com')
-
-                ->setTo($request->query->get('email'))
-                ->setBody(
-                    $this->renderView(
-                        'emails/recover-password.html.twig',
-                        [
-                            'recoveryLink' => $_ENV["FRONTEND_URL"] . "/reset-password?recovery_key=" . $user->getRecoveryKey(),
-                            'email' => $email,
-                        ]
-                    ),
-                    'text/html'
-                );
-            $mailer->send($message);
-
-            return new JsonResponse([
-                'code' => Response::HTTP_OK,
-                'message' => 'Recovery key created',
-            ], Response::HTTP_OK);
-        } else {
+        if (!$user) {
             return new JsonResponse(
                 [
                     'code' => Response::HTTP_UNAUTHORIZED,
@@ -211,6 +196,13 @@ class AuthController extends AbstractController
                 Response::HTTP_UNAUTHORIZED
             );
         }
+
+        $this->passwordRecoveryManager->recoverPassword($user);
+
+        return new JsonResponse([
+            'code' => Response::HTTP_OK,
+            'message' => 'Recovery email has been sent',
+        ], Response::HTTP_OK);
     }
 
     /**
@@ -233,27 +225,12 @@ class AuthController extends AbstractController
     {
         $newPassword = $request->query->get('password');
         $recoveryKey = $request->query->get('recoveryKey');
+
         $user = $this->userRepository->findOneBy([
             'recoveryKey' => $recoveryKey,
         ]);
-        if ($user) {
 
-            if (strlen($newPassword) < 6) {
-                return new JsonResponse(
-                    [
-                        'code' => Response::HTTP_CONFLICT,
-                        'message' => 'Your password must be at least 6 characters long'
-                    ],
-                    Response::HTTP_CONFLICT
-                );
-            }
-
-            $this->userRepository->updatePassword($user, $newPassword);
-            return new JsonResponse([
-                'code' => Response::HTTP_OK,
-                'message' => 'Password changed',
-            ], Response::HTTP_OK);
-        } else {
+        if (!$user) {
             return new JsonResponse(
                 [
                     'code' => Response::HTTP_UNAUTHORIZED,
@@ -262,5 +239,21 @@ class AuthController extends AbstractController
                 Response::HTTP_UNAUTHORIZED
             );
         }
+
+        if (strlen($newPassword) < 6) {
+            return new JsonResponse(
+                [
+                    'code' => Response::HTTP_CONFLICT,
+                    'message' => 'Your password must be at least 6 characters long'
+                ],
+                Response::HTTP_CONFLICT
+            );
+        }
+
+        $this->userRepository->updatePassword($user, $newPassword); 
+        return new JsonResponse([
+            'code' => Response::HTTP_OK,
+            'message' => 'Password changed',
+        ], Response::HTTP_OK);
     }
 }
