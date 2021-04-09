@@ -4,7 +4,8 @@ namespace App\Controller;
 
 use App\Repository\UserRepository;
 use App\Service\PasswordRecoveryManager;
-
+use App\Service\UserManager;
+use Exception;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -35,12 +36,15 @@ class AuthController extends AbstractController
      */
     private $JWTManager;
 
-    public function __construct(UserRepository $userRepository, UserPasswordEncoderInterface $passwordEncoder, JWTTokenManagerInterface $JWTManager, PasswordRecoveryManager $passwordRecoveryManager)
+    private $userManager;
+
+    public function __construct(UserRepository $userRepository, UserPasswordEncoderInterface $passwordEncoder, JWTTokenManagerInterface $JWTManager, PasswordRecoveryManager $passwordRecoveryManager, UserManager $userManager)
     {
         $this->userRepository = $userRepository;
         $this->passwordEncoder = $passwordEncoder;
         $this->JWTManager = $JWTManager;
         $this->passwordRecoveryManager = $passwordRecoveryManager;
+        $this->userManager = $userManager;
     }
 
     /**
@@ -64,7 +68,7 @@ class AuthController extends AbstractController
     public function register(Request $request): JsonResponse
     {
         $email = $request->query->get('email');
-        $password = $request->query->get('password');
+        $plainPassword = $request->query->get('password');
 
         $user = $this->userRepository->findOneBy(['email' => $email,]);
 
@@ -78,7 +82,7 @@ class AuthController extends AbstractController
             );
         }
 
-        if (strlen($password) < 6) {
+        if (strlen($plainPassword) < 6) {
             return new JsonResponse(
                 [
                     'code' => Response::HTTP_CONFLICT,
@@ -88,7 +92,8 @@ class AuthController extends AbstractController
             );
         }
 
-        $user = $this->userRepository->createUser($email, $password);
+        $user = $this->userManager->createUser($email, $plainPassword);
+
         $jwt =
             $this->JWTManager->create($user);
 
@@ -181,10 +186,10 @@ class AuthController extends AbstractController
      */
     public function recoverPassword(Request $request): JsonResponse
     {
-        $recipient = $request->query->get('email');
+        $email = $request->query->get('email');
 
         $user = $this->userRepository->findOneBy([
-            'email' => $recipient,
+            'email' => $email,
         ]);
 
         if (!$user) {
@@ -197,12 +202,20 @@ class AuthController extends AbstractController
             );
         }
 
-        $this->passwordRecoveryManager->recoverPassword($user);
+        try {
+            $this->passwordRecoveryManager->recoverPassword($user);
 
-        return new JsonResponse([
-            'code' => Response::HTTP_OK,
-            'message' => 'Recovery email has been sent',
-        ], Response::HTTP_OK);
+            return new JsonResponse([
+                'code' => Response::HTTP_OK,
+                'message' => 'Recovery email has been sent',
+            ], Response::HTTP_OK);
+        } catch (\Exception $e) {
+
+            return new JsonResponse([
+                'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
+                'message' => 'Something went wrong',
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -214,7 +227,7 @@ class AuthController extends AbstractController
      *     in="query",
      *     @OA\Schema(type="string")
      *  )
-     *      * @OA\Parameter(
+     * @OA\Parameter(
      *     name="recoveryKey",
      *     in="query",
      *     @OA\Schema(type="string")
@@ -226,9 +239,7 @@ class AuthController extends AbstractController
         $newPassword = $request->query->get('password');
         $recoveryKey = $request->query->get('recoveryKey');
 
-        $user = $this->userRepository->findOneBy([
-            'recoveryKey' => $recoveryKey,
-        ]);
+        $user = $this->userRepository->findOneBy(['recoveryKey' => $recoveryKey]);
 
         if (!$user) {
             return new JsonResponse(
@@ -241,6 +252,7 @@ class AuthController extends AbstractController
         }
 
         if (strlen($newPassword) < 6) {
+
             return new JsonResponse(
                 [
                     'code' => Response::HTTP_CONFLICT,
@@ -250,10 +262,19 @@ class AuthController extends AbstractController
             );
         }
 
-        $this->userRepository->updatePassword($user, $newPassword); 
-        return new JsonResponse([
-            'code' => Response::HTTP_OK,
-            'message' => 'Password changed',
-        ], Response::HTTP_OK);
+        try {
+            $this->userManager->changePassword($user, $newPassword);
+
+            return new JsonResponse([
+                'code' => Response::HTTP_OK,
+                'message' => 'Password has been changed',
+            ], Response::HTTP_OK);
+        } catch (\Exception $e) {
+
+            return new JsonResponse([
+                'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
+                'message' => 'Something went wrong',
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }
