@@ -131,7 +131,6 @@ class AuthController extends AbstractController
      *  )
      * @return JsonResponse
      */
-    public function login(Request $request, \Swift_Mailer $mailer): JsonResponse
     {
 
         $user = $this->userRepository->findOneBy([
