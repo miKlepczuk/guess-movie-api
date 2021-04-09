@@ -4,14 +4,13 @@ namespace App\Controller;
 
 use App\Entity\Puzzle;
 use App\Repository\PuzzleRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Nelmio\ApiDocBundle\Annotation\Model;
-use Nelmio\ApiDocBundle\Annotation\Security;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use OpenApi\Annotations as OA;
 
 /**
@@ -21,19 +20,13 @@ class PuzzleController extends AbstractController
 {
 
     /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
-
-    /**
      * @var PuzzleRepository
      */
     private $puzzleRepository;
 
 
-    public function __construct(EntityManagerInterface $entityManager, PuzzleRepository $puzzleRepository)
+    public function __construct(PuzzleRepository $puzzleRepository)
     {
-        $this->entityManager = $entityManager;
         $this->puzzleRepository = $puzzleRepository;
     }
 
@@ -79,6 +72,7 @@ class PuzzleController extends AbstractController
      *  )
      * 
      * @OA\Tag(name="puzzles")
+     * @IsGranted("ROLE_ADMIN")
      */
     public function addPuzzle(Request $request): JsonResponse
     {
@@ -142,6 +136,7 @@ class PuzzleController extends AbstractController
      *  )
      * 
      * @OA\Tag(name="puzzles")
+     * @IsGranted("ROLE_ADMIN")
      */
     public function updatePuzzle($id, Request $request): JsonResponse
     {
@@ -172,6 +167,7 @@ class PuzzleController extends AbstractController
      * )
      * 
      * @OA\Tag(name="puzzles")
+     * @IsGranted("ROLE_ADMIN")
      */
     public function deletePuzzle($id): JsonResponse
     {
