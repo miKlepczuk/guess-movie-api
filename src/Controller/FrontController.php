@@ -9,11 +9,11 @@ use Symfony\Component\Routing\Annotation\Route;
 class FrontController extends AbstractController
 {
   /**
-   * @Route("/", name="main_page")
+   * @Route("/", name="main_page", methods={"GET"})
    */
   public function index(): Response
   {
-
+    
     return $this->redirectToRoute('app.swagger_ui');
   }
 }
