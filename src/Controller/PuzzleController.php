@@ -15,7 +15,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use OpenApi\Annotations as OA;
 
 /**
- *   * @Route("/api")
+ * @Route("/api")
  */
 class PuzzleController extends AbstractController
 {

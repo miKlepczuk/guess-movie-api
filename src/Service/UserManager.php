@@ -21,7 +21,7 @@ class UserManager
         $user = new User();
         $user->setEmail($email);
         $user->setPassword($this->passwordEncoder->encodePassword($user, $plainPassword));
-        $user->setScore(100);
+        $user->setScore($_ENV['STARTING_USER_SCORE']);
         $user->setIsPuzzleFinished(false);
 
         $puzzle = $this->entityManager->getRepository(Puzzle::class)->findOneBy(['id' => 1]);
