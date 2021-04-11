@@ -49,6 +49,14 @@ class Puzzle
         return $this->image;
     }
 
+    private function getImageFullPath(): ?string
+    {
+        $domain = $_ENV['BACKEND_URL'];
+        $path = $_ENV['PUZZLE_IMAGE_PATH'];
+
+        return $domain . $path . $this->getImage();
+    }
+
     public function setImage(string $image): self
     {
         $this->image = $image;
@@ -61,7 +69,7 @@ class Puzzle
         return [
             "id" => $this->getId(),
             "sentence" => $this->getSentence(),
-            "image" => $this->getImage()
+            "image" => $this->getImageFullPath()
         ];
     }
 }
