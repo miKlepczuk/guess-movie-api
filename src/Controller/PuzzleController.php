@@ -163,7 +163,7 @@ class PuzzleController extends AbstractController
      * )
      * 
      * @OA\Tag(name="puzzles")
-     * @IsGranted("ROLE_ADMIN")
+     * @IsGranted("ROLE_SUPER_ADMIN")
      */
     public function deletePuzzle($id): JsonResponse
     {
