@@ -13,7 +13,7 @@ class ExceptionListener
     public function onKernelException(ExceptionEvent $event)
     {
 
-        if ($_ENV['APP_ENV'] == 'prod') {
+        if ($_ENV['APP_ENV'] == 'dev') {
             return;
         }
 
